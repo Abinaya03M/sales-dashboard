@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    font-family: Inter;
+    background: #f4f6fb;
+    margin: 0;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  color: #fff;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  font-size: 22px;
+}
+
+.nav-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: rgba(255,255,255,0.15);
+  padding: 10px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.field label {
+  margin-bottom: 3px;
+  opacity: 0.9;
+}
+
+.nav-filters input,
+.nav-filters select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+.apply-btn {
+  background: #ffce54;
+  color: #222;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.nav-right button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* 🌙 Dark mode */
+body.dark {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+body.dark .navbar {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+/* 📱 Responsive */
+@media (max-width: 900px) {
+  .nav-filters {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+
+.filters input, select {
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 20px;
+    padding: 25px;
+}
+
+.kpi {
+    color: white;
+    padding: 22px;
+    border-radius: 18px;
+    font-size: 18px;
+}
+
+.sales { background: linear-gradient(135deg,#2563eb,#1e3a8a); }
+.profit { background: linear-gradient(135deg,#16a34a,#065f46); }
+.orders { background: linear-gradient(135deg,#7c3aed,#4c1d95); }
+
+.charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+    gap: 20px;
+    padding: 25px;
+}
+
+.chart-box {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+}
+
+.data-explorer {
+  background: var(--card);
+  padding: 26px;
+  margin: 30px;
+  border-radius: 18px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.controls input,
+.controls select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background: #6366f1;
+  color: white;
+}
+
+th, td {
+  padding: 10px;
+  text-align: left;
+}
+
+tbody tr:nth-child(even) {
+  background: #f4f6fb;
+}
+
+
+/* ================================
+   COMMON SECTION STYLING
+================================ */
+section {
+  margin: 40px 30px;
+  padding: 30px;
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+}
+
+section h2 {
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ================================
+   VISUAL STORYTELLING
+================================ */
+.chart-story p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #4b5563;
+  margin-top: 12px;
+}
+
+body.dark .chart-story p {
+  color: #cbd5e1;
+}
+
+/* ================================
+   DETAILED ANALYSIS
+================================ */
+.analysis h4 {
+  margin-top:20px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.analysis p {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+body.dark .analysis h4 {
+  color: #93c5fd;
+}
+
+body.dark .analysis p {
+  color: #d1d5db;
+}
+
+/* ================================
+   USE CASES
+================================ */
+.use-cases ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.use-cases li {
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  color: white;
+  border-radius: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.use-cases li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.3);
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 768px) {
+  section {
+    margin: 25px 16px;
+    padding: 22px;
+  }
+
+  section h2 {
+    font-size: 20px;
+  }
+
+  .analysis h4 {
+    font-size: 16px;
+  }
+}
+/* 🔍 Insight Search Input */
+#insightSearch {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  transition: box-shadow 0.3s ease;
+}
+
+#insightSearch:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.3);
+}
+
+/* ✨ Insight Items */
+#insightList li {
+  list-style: none;
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  color: white;
+  border-radius: 14px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.35s ease;
+}
+
+/* Hide animation */
+#insightList li.hide {
+  opacity: 0;
+  transform: translateY(10px);
+  
+}
+
+/* Highlight match */
+.highlight {
+  background: rgba(255,255,255,0.3);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.insight-text {
+  margin: 6px 0 12px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.action-text {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #e0e7ff;
+  font-style: italic;
+}
+
+
+.ai-summary {
+  margin: 40px 30px;
+  padding: 30px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: white;
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+}
+
+.ai-summary h2 {
+  margin-bottom: 14px;
+  font-size: 22px;
+}
+
+.ai-summary p {
+  font-size: 16px;
+  line-height: 1.7;
+  opacity: 0.95;
+}
+
+
+
+.contact-section {
+  margin: 50px 30px;
+  padding: 35px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+}
+
+.contact-section h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.contact-section p {
+  margin-bottom: 20px;
+  color: #6b7280;
+}
+
+.contact-form {
+  display: grid;
+  gap: 14px;
+}
+
+.contact-form input,
+.contact-form select,
+.contact-form textarea {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.contact-form button {
+  background: linear-gradient(135deg, #6366f1, #9333ea);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.contact-form button:hover {
+  transform: translateY(-2px);
+}
+
+/* Dark mode */
+body.dark .contact-section {
+  background: #1e293b;
+}
+
+body.dark .contact-section p {
+  color: #cbd5e1;
+}
+
+
+
+.feedback-popup {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: all 0.4s ease;
+  z-index: 9999;
+}
+
+/* SHOW STATE */
+.feedback-popup.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+
+
+</style>
+</head>
+
+<body>
+
+<nav class="navbar">
+  <div class="nav-left">
+    <span class="logo">📊</span>
+    <h2>Sales Dashboard</h2>
+  </div>
+
+  <form class="nav-filters" method="get">
+    <div class="field">
+      <label>From</label>
+      <input type="date" name="start_date">
+    </div>
+
+    <div class="field">
+      <label>To</label>
+      <input type="date" name="end_date">
+    </div>
+
+    <div class="field">
+      <label>Region</label>
+      <select name="region">
+        <option value="">All</option>
+        {% for r in regions %}
+        <option value="{{ r }}">{{ r }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button class="apply-btn">Apply</button>
+  </form>
+
+  <div class="nav-right">
+    <button id="darkToggle">🌙</button>
+  </div>
+</nav>
+
+
+<div class="cards">
+  <div class="kpi sales">💰 Sales<br>₹ {{ total_sales }}</div>
+  <div class="kpi profit">📈 Profit<br>₹ {{ total_profit }}</div>
+  <div class="kpi orders">🧾 Orders<br>{{ total_orders }}</div>
+</div>
+
+<div class="charts">
+  <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
+  <div class="chart-box"><canvas id="productChart"></canvas></div>
+  <div class="chart-box"><canvas id="regionChart"></canvas></div>
+</div>
+
+<section class="ai-summary">
+  <h2>🧠 AI-Generated Executive Summary</h2>
+  <p>{{ ai_summary }}</p>
+</section>
+
+
+
+<section class="use-cases">
+  <h2>🤖 Auto-Generated Insights & Recommendations</h2>
+
+  <input
+    type="text"
+    id="insightSearch"
+    placeholder="Search insights (profit, sales, cost...)"
+  >
+
+  <ul id="insightList">
+    {% for item in auto_insights %}
+    <li>
+      <strong>Insight:</strong>
+      <p class="insight-text">{{ item.insight }}</p>
+
+      <strong>Recommended Action:</strong>
+      <p class="action-text">{{ item.action }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+
+<section class="comparison-section">
+  <h2>📊 Year-on-Year Sales Comparison</h2>
+  <canvas id="yoyChart"></canvas>
+</section>
+
+
+<section class="data-explorer">
+  <h2>🔎 Explore the Data</h2>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search product / region">
+
+    <select id="sortSelect">
+      <option value="">Sort By</option>
+      <option value="sales">Total Sales</option>
+      <option value="profit">Profit</option>
+    </select>
+  </div>
+
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Region</th>
+        <th>Sales</th>
+        <th>Profit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table_data %}
+      <tr>
+        <td>{{ row.Product }}</td>
+        <td>{{ row.Region }}</td>
+        <td>{{ row.TotalPrice }}</td>
+        <td>{{ row.Profit }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+
+
+
+<!-- VISUAL STORYTELLING -->
+<div class="chart-story">
+  <h3>📈 Monthly Sales Trend</h3>
+  
+
+  <p class="story-text">
+    The chart shows a gradual increase in sales during mid-year,
+    followed by a decline. This pattern indicates seasonal buying
+    behavior and helps businesses prepare marketing strategies.
+  </p>
+</div>
+<div class="chart-story">
+  <h3>🌍 Profit by Region</h3>
+
+  <p class="story-text">
+    Certain regions generate higher profit margins despite lower sales,
+    suggesting efficient operations and better pricing strategies.
+  </p>
+</div>
+
+
+
+  <!-- DETAILED ANALYSIS -->
+<section class="analysis">
+  <h2>📊 Detailed Analysis</h2>
+
+  <h4>1. Sales Trend Analysis</h4>
+  <p>
+    Monthly sales analysis shows clear variations over time.
+    Sales increase during specific months, indicating seasonal demand.
+    This helps businesses plan inventory and promotions in advance.
+  </p>
+
+  <h4>2. Category Performance</h4>
+  <p>
+    Product category analysis highlights which categories contribute
+    most to total revenue. High-performing categories should receive
+    higher marketing focus.
+  </p>
+
+  <h4>3. Regional Profit Analysis</h4>
+  <p>
+    Profit distribution across regions shows uneven performance.
+    Some regions generate high sales but lower profit, indicating
+    higher operational costs or discounts.
+  </p>
+</section>
+
+
+
+
+<!-- USE CASES -->
+<section class="use-cases">
+  <h2>💡 Business Use Cases</h2>
+
+  <ul>
+    <li>
+      <strong>Sales Forecasting:</strong>
+      Historical sales trends can be used to predict next month’s sales.
+    </li>
+
+    <li>
+      <strong>Customer Churn Analysis:</strong>
+      Low-profit or declining regions can be analyzed to identify
+      customer dissatisfaction.
+    </li>
+
+    <li>
+      <strong>Inventory Optimization:</strong>
+      High-demand products can be stocked more efficiently.
+    </li>
+
+    <li>
+      <strong>Regional Strategy:</strong>
+      Marketing budgets can be allocated based on regional performance.
+    </li>
+  </ul>
+</section>
+
+
+
+<section class="contact-section" id="contact">
+  <h2>📩 Contact / Feedback</h2>
+  <p>
+    Have feedback, questions, or need access to the full dataset?
+    Send a message below.
+  </p>
+
+  <form class="contact-form" method="post" action="/feedback">
+    <input type="text" name="name" placeholder="Your Name" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+
+    <select name="purpose" required>
+      <option value="">Select Purpose</option>
+      <option value="feedback">Dashboard Feedback</option>
+      <option value="dataset">Request Full Dataset</option>
+      <option value="collaboration">Collaboration</option>
+    </select>
+
+    <textarea name="message" rows="4" placeholder="Your message..." required></textarea>
+
+    <button type="submit">Send Message</button>
+  </form>
+  
+</section>
+<!-- FEEDBACK POPUP -->
+<div id="feedbackPopup" class="feedback-popup">
+  ✅ Feedback submitted successfully!
+</div>
+
+
+
+</section>
+
+<script>
+new Chart(monthlyChart,{
+  type:'line',
+  data:{
+    labels: {{ months | safe }},
+    datasets:[{label:'Monthly Sales',data:{{ monthly_sales | safe }},borderColor:'#6366f1'}]
+  }
+});
+
+new Chart(productChart,{
+  type:'bar',
+  data:{
+    labels: {{ products | safe }},
+    datasets:[{label:'Product Sales',data:{{ product_sales | safe }},backgroundColor:'#22c55e'}]
+  }
+});
+
+new Chart(regionChart,{
+  type:'doughnut',
+  data:{
+    labels: {{ region_names | safe }},
+    datasets:[{data:{{ region_profit | safe }},backgroundColor:['#6366f1','#22c55e','#f97316','#ef4444']}]
+  }
+});
+ document.getElementById("darkToggle").onclick = () => {
+    document.body.classList.toggle("dark");
+  };
+
+
+  
+const searchInput = document.getElementById("searchInput");
+const table = document.getElementById("dataTable");
+const rows = table.getElementsByTagName("tr");
+
+searchInput.addEventListener("keyup", () => {
+  const value = searchInput.value.toLowerCase();
+  for (let i = 1; i < rows.length; i++) {
+    rows[i].style.display =
+      rows[i].innerText.toLowerCase().includes(value) ? "" : "none";
+  }
+});
+
+document.getElementById("insightSearch")
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const searchInput = document.getElementById("searchInput");
+  const sortSelect = document.getElementById("sortSelect");
+  const tableBody = document.querySelector("#dataTable tbody");
+
+  if (!searchInput || !sortSelect || !tableBody) {
+    console.error("Explore Data elements not found");
+    return;
+  }
+
+  function getRows() {
+    return Array.from(tableBody.querySelectorAll("tr"));
+  }
+
+  /* 🔍 SEARCH */
+  searchInput.addEventListener("input", () => {
+    const value = searchInput.value.toLowerCase();
+
+    getRows().forEach(row => {
+      row.style.display =
+        row.innerText.toLowerCase().includes(value) ? "" : "none";
+    });
+  });
+
+  /* 🔽 SORT */
+  sortSelect.addEventListener("change", () => {
+    const type = sortSelect.value;
+    if (!type) return;
+
+    const colIndex = type === "sales" ? 2 : 3;
+
+    const rows = getRows().sort((a, b) => {
+      const aVal = parseFloat(
+        a.children[colIndex].innerText.replace(/[₹,]/g, "")
+      );
+      const bVal = parseFloat(
+        b.children[colIndex].innerText.replace(/[₹,]/g, "")
+      );
+      return bVal - aVal;
+    });
+
+    rows.forEach(row => tableBody.appendChild(row));
+  });
+
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const insightSearch = document.getElementById("insightSearch");
+  const insightItems = document.querySelectorAll("#insightList li");
+
+  if (!insightSearch || insightItems.length === 0) {
+    console.error("Insight elements not found");
+    return;
+  }
+
+  insightSearch.addEventListener("input", () => {
+    const value = insightSearch.value.toLowerCase();
+
+    insightItems.forEach(item => {
+      const text = item.innerText;
+      const lower = text.toLowerCase();
+
+      if (lower.includes(value)) {
+        item.classList.remove("hide");
+
+        if (value !== "") {
+          const regex = new RegExp(`(${value})`, "gi");
+          item.innerHTML = text.replace(regex, `<span class="highlight">$1</span>`);
+        } else {
+          item.innerHTML = text;
+        }
+
+      } else {
+        item.classList.add("hide");
+      }
+    });
+  });
+
+});
+
+
+
+  const params = new URLSearchParams(window.location.search);
+  const popup = document.getElementById("feedbackPopup");
+
+  if (params.get("feedback") === "success") {
+    popup.classList.add("show");
+
+    // Hide after 3 seconds
+    setTimeout(() => {
+      popup.classList.remove("show");
+    }, 3000);
+
+    // Clean URL (remove ?feedback=success)
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+
+new Chart(document.getElementById("yoyChart"), {
+  type: "bar",
+  data: {
+    labels: ["2023", "2024", "2025"],
+    datasets: [{
+      label: "Total Sales",
+      data: [1200000, 1450000, 1620000],
+      backgroundColor: "#6366f1"
+    }]
+  },
+  options: {
+    responsive: true
+  }
+});
+
+
+
+
+
+</script>
+
+</body>
+</html>
